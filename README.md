@@ -32,35 +32,39 @@ import cv2
 
 facecap = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+if facecap.empty():
+    print("Error: Haarcascade not loaded.")
+    exit()
+
 videocap = cv2.VideoCapture(0)
 
+if not videocap.isOpened():
+    print("Camera not detected")
+    exit()
+
 while True:
+    ret, videodata = videocap.read()
 
-ret, videodata = videocap.read()
+    if not ret:
+        print("Failed to grab frame")
+        break
 
-if not ret:
+    gray = cv2.cvtColor(videodata, cv2.COLOR_BGR2GRAY)
 
-print("Camera not detected")
+    faces = facecap.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-break
+    for (x, y, w, h) in faces:
+        cv2.rectangle(videodata, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-gray = cv2.cvtColor(videodata, cv2.COLOR_BGR2GRAY)
+    cv2.imshow('Video live', videodata)
 
-faces = facecap.detectMultiScale(gray, 1.1, 5, (30, 30))
+    # Press ESC to exit
+    if cv2.waitKey(10) & 0xFF == 27:
+        break
 
-for (x, y, w, h) in faces:
-
-    cv2.rectangle(videodata, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-cv2.imshow('Video live', videodata)
-
-if cv2.waitKey(10) & 0xFF == ord('a'):
-
-    break
-    
 videocap.release()
-
 cv2.destroyAllWindows()
+
 
 ## Requirements
 opencv-python
